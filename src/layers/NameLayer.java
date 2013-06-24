@@ -10,38 +10,22 @@ import java.awt.Image;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.annotation.Resources;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
-
-import org.omg.CORBA.portable.InputStream;
-
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @SuppressWarnings("serial")
 public class NameLayer extends JPanel implements KeyListener, MouseListener,
@@ -80,7 +64,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     JLabel text, textWrong, userName, hi;
 
-    public NameLayer() throws URISyntaxException, IOException {
+    public NameLayer() {
         // diction = (InputStream)
         // this.getClass().getClassLoader().getResourceAsStream("dict.txt");
 
@@ -605,11 +589,8 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     public String word() {
         Random rand = new Random();
         int r = rand.nextInt(words.length - 1);
-
         String choice = (String) words[r];
-
         return choice;
-
     }
 
     @Override
@@ -622,29 +603,24 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     public void mouseMoved(MouseEvent e) {
         // TODO Auto-generated method stub
         System.out.println(e.getY());
-
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         // TODO Auto-generated method stub
-
         mouse = e;
         if ((e.getY() >= 10 && e.getY() <= 36)
                 && (e.getX() >= 20 && e.getX() <= 120)) {
             lang = 1;
-
         } else if ((e.getY() >= 37 && e.getY() <= 70)
                 && (e.getX() >= 20 && e.getX() <= 120)) {
             lang = 0;
         }
-
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -656,13 +632,11 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     @Override
     public void mousePressed(MouseEvent e) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
         // TODO Auto-generated method stub
-
     }
 
     @Override
@@ -670,9 +644,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         // TODO Auto-generated method stub
         key = e;
         if (!t.getText().isEmpty()) {
-
         }
-
     }
 
     @Override
@@ -689,39 +661,12 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     // makes the dictionary into a list
     public LinkedList<String> dictionary() {
-
-        File f = null;
-        URI file2 = null;
-        
-        URL file = this.getClass().getResource(hard);
-        try {
-            file2 = file.toURI();
-        } catch (URISyntaxException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        System.out.println(file.toString());
-            f = new File (file2);
-
-
-        Scanner read = null;
-        try {
-            read = new Scanner(f);
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        java.io.InputStream is = getClass().getResourceAsStream("dict.txt");
+        Scanner cns = new Scanner(is);
         LinkedList<String> diction = new LinkedList<String>();
-        String temp = "";
-         while (read.hasNext()) {
-//        while ((temp = input.readLine()) != null) {
-
-            diction.add(read.next());
-
+         while (cns.hasNext()) {
+            diction.add(cns.next());
         }
-
         return diction;
     }
-
 }
