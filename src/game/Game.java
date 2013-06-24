@@ -4,7 +4,6 @@ import javax.swing.JFrame;
 
 import layers.NameLayer;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 

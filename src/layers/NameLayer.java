@@ -10,6 +10,8 @@ import java.awt.Image;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -21,6 +23,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -30,7 +35,7 @@ import java.util.Scanner;
 @SuppressWarnings("serial")
 public class NameLayer extends JPanel implements KeyListener, MouseListener,
         MouseMotionListener, ActionListener {
-    
+
     String hard = "dict.txt";
     String easy = "words.txt";
 
@@ -60,7 +65,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     Font font = new Font("Verdana", Font.BOLD, 86);
     Font fontBig = new Font("Verdana", Font.BOLD, 186);
     // static InputStream diction;
-//    static URL diction;
+    // static URL diction;
 
     JLabel text, textWrong, userName, hi;
 
@@ -74,11 +79,12 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         words = dictionary().toArray();
         word = word();
         blankWord = blanker(word);
-//        diction = getClass().getResource("src/layers/dict.txt");
+        // diction = getClass().getResource("src/layers/dict.txt");
 
         y2 = y = 110;
         x = 1075;
-        count = stars = 0;
+        count = 0;
+        stars = -200;
         timer = new Timer(25, this);
         timer.start();
 
@@ -131,32 +137,34 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     }
 
     public void paintBegin(Graphics g) {
+        if (stars >= 0) {
+            if (lang == 1) {
+                ImageIcon start = new ImageIcon(this.getClass().getResource(
+                        "doneE.png"));
+                Image t = start.getImage();
+                Graphics2D draw = (Graphics2D) g;
+                draw.drawImage(t, 0, 530, this);
 
-        if (lang == 1) {
-            ImageIcon start = new ImageIcon(this.getClass().getResource(
-                    "doneE.png"));
-            Image t = start.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 0, 530, this);
+                ImageIcon start2 = new ImageIcon(this.getClass().getResource(
+                        "typeNameE.png"));
+                Image t2 = start2.getImage();
+                Graphics2D draw2 = (Graphics2D) g;
+                draw2.drawImage(t2, 0, 200, this);
+            } else {
+                ImageIcon start = new ImageIcon(this.getClass().getResource(
+                        "doneH.png"));
+                Image t = start.getImage();
+                Graphics2D draw = (Graphics2D) g;
+                draw.drawImage(t, 0, 530, this);
 
-            ImageIcon start2 = new ImageIcon(this.getClass().getResource(
-                    "typeNameE.png"));
-            Image t2 = start2.getImage();
-            Graphics2D draw2 = (Graphics2D) g;
-            draw2.drawImage(t2, 0, 200, this);
-        } else {
-            ImageIcon start = new ImageIcon(this.getClass().getResource(
-                    "doneH.png"));
-            Image t = start.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 0, 530, this);
-
-            ImageIcon start2 = new ImageIcon(this.getClass().getResource(
-                    "typeNameH.png"));
-            Image t2 = start2.getImage();
-            Graphics2D draw2 = (Graphics2D) g;
-            draw2.drawImage(t2, 0, 200, this);
+                ImageIcon start2 = new ImageIcon(this.getClass().getResource(
+                        "typeNameH.png"));
+                Image t2 = start2.getImage();
+                Graphics2D draw2 = (Graphics2D) g;
+                draw2.drawImage(t2, 0, 200, this);
+            }
         }
+
     }
 
     public void paintLogo(Graphics g) {
@@ -174,17 +182,25 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
         name.drawString(user.toUpperCase(), 150, 60);
 
-        ImageIcon ii = new ImageIcon(this.getClass().getResource("logo.png"));
-        Image logo = ii.getImage();
+        InputStream logoURL = this.getClass().getResourceAsStream("logo.png");
+        InputStream starURL = this.getClass().getResourceAsStream("star.png");
+        InputStream langHURL = this.getClass().getResourceAsStream("LangH.png");
+        InputStream langEURL = this.getClass().getResourceAsStream("LangE.png");
 
-        ImageIcon i = new ImageIcon(this.getClass().getResource("star.png"));
-        Image star = i.getImage();
+        Image logo = null;
+        Image star = null;
+        Image langH = null;
+        Image langE = null;
 
-        ImageIcon lh = new ImageIcon(this.getClass().getResource("langH.png"));
-        Image langH = lh.getImage();
-
-        ImageIcon le = new ImageIcon(this.getClass().getResource("langE.png"));
-        Image langE = le.getImage();
+        try {
+            logo = ImageIO.read(logoURL);
+            star = ImageIO.read(starURL);
+            langH = ImageIO.read(langHURL);
+            langE = ImageIO.read(langEURL);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.drawImage(star, x, y, this);
@@ -217,6 +233,22 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         } else {
             Graphics2D laH = (Graphics2D) g;
             laH.drawImage(langH, 20, 10, this);
+        }
+
+        if (stars < 0) {
+//            if (stars < -100) {
+                ImageIcon start = new ImageIcon(this.getClass().getResource(
+                        "TypeTimeLogo.png"));
+                Image t = start.getImage();
+                Graphics2D draw = (Graphics2D) g;
+                draw.drawImage(t, 0, -50, this);
+//            }else {
+//                ImageIcon start = new ImageIcon(this.getClass().getResource(
+//                        "TypeTimeNote.png"));
+//                Image t = start.getImage();
+//                Graphics2D draw = (Graphics2D) g;
+//                draw.drawImage(t, 0, -50, this);
+//            }
         }
 
     }
@@ -468,6 +500,9 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         if (key != null && key.getKeyCode() == 32 && !t.getText().equals("")) {
             t.setText(t.getText().substring(0, t.getText().length() - 1));
+            if (stars < 0) {
+                stars = 0;
+            }
         }
 
         if (flag == 0) {
@@ -661,10 +696,10 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     // makes the dictionary into a list
     public LinkedList<String> dictionary() {
-        java.io.InputStream is = getClass().getResourceAsStream("dict.txt");
-        Scanner cns = new Scanner(is);
+        java.io.InputStream file = getClass().getResourceAsStream("dict.txt");
+        Scanner cns = new Scanner(file);
         LinkedList<String> diction = new LinkedList<String>();
-         while (cns.hasNext()) {
+        while (cns.hasNext()) {
             diction.add(cns.next());
         }
         return diction;
