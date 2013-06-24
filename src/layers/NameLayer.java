@@ -172,6 +172,8 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         Graphics2D hello = (Graphics2D) g;
         Graphics2D name = (Graphics2D) g;
+//        Graphics2D num = (Graphics2D) g;
+
         hello.setFont(new Font("Verdana", Font.BOLD, 16));
         hello.drawString("HELLO, ", 150, 20);
         name.setColor(Color.ORANGE);
@@ -180,6 +182,8 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         } else {
             name.setFont(new Font("Verdana", Font.BOLD, 36));
         }
+//        String number = (1000 - count)/10 +"";
+//        num.drawString(number, 150, 100);
         name.drawString(user.toUpperCase(), 150, 60);
 
         InputStream logoURL = this.getClass().getResourceAsStream("logo.png");
