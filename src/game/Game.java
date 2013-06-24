@@ -5,12 +5,14 @@ import javax.swing.JFrame;
 import layers.NameLayer;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 @SuppressWarnings("serial")
 public class Game extends JFrame {
     static NameLayer nl;
     
-    public Game() throws FileNotFoundException {
+    public Game() throws IOException, URISyntaxException {
 
         nl = new NameLayer();
         add(nl);
@@ -29,7 +31,7 @@ public class Game extends JFrame {
 
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException, URISyntaxException {
         new Game();
     }
 

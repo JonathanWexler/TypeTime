@@ -11,6 +11,8 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.annotation.Resources;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -18,22 +20,35 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import org.omg.CORBA.portable.InputStream;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @SuppressWarnings("serial")
 public class NameLayer extends JPanel implements KeyListener, MouseListener,
         MouseMotionListener, ActionListener {
+    
+    String hard = "dict.txt";
+    String easy = "words.txt";
 
     String user = "";
     String word = "";
@@ -60,10 +75,14 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     JTextField t = new JTextField(" Enter Here  ");
     Font font = new Font("Verdana", Font.BOLD, 86);
     Font fontBig = new Font("Verdana", Font.BOLD, 186);
+    // static InputStream diction;
+//    static URL diction;
 
     JLabel text, textWrong, userName, hi;
 
-    public NameLayer() throws FileNotFoundException {
+    public NameLayer() throws URISyntaxException, IOException {
+        // diction = (InputStream)
+        // this.getClass().getClassLoader().getResourceAsStream("dict.txt");
 
         this.setLayout(null);
         setBackground(Color.WHITE);
@@ -71,6 +90,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         words = dictionary().toArray();
         word = word();
         blankWord = blanker(word);
+//        diction = getClass().getResource("src/layers/dict.txt");
 
         y2 = y = 110;
         x = 1075;
@@ -106,6 +126,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         for (int i = 0; i <= word.length() - 2; i++) {
             blanks += " _";
         }
+
         return blanks;
 
     }
@@ -445,27 +466,26 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                 draws.drawImage(s, 0, 0, this);
             }
         }
-//            ImageIcon smile = new ImageIcon(this.getClass().getResource(
-//                    "playButton2.png"));
-//            Image s = smile.getImage();
-//            Graphics2D draws = (Graphics2D) g;
-//            draws.drawImage(s, 520, 610, this);
-//        } else {
-//            // ImageIcon smile = new ImageIcon(this.getClass().getResource(
-//            // "pauseButton2.png"));
-//            // Image s = smile.getImage();
-//            // Graphics2D draws = (Graphics2D) g;
-//            // draws.drawImage(s, 520, 610, this);
-//        }
+        // ImageIcon smile = new ImageIcon(this.getClass().getResource(
+        // "playButton2.png"));
+        // Image s = smile.getImage();
+        // Graphics2D draws = (Graphics2D) g;
+        // draws.drawImage(s, 520, 610, this);
+        // } else {
+        // // ImageIcon smile = new ImageIcon(this.getClass().getResource(
+        // // "pauseButton2.png"));
+        // // Image s = smile.getImage();
+        // // Graphics2D draws = (Graphics2D) g;
+        // // draws.drawImage(s, 520, 610, this);
+        // }
     }
 
     public void actionPerformed(ActionEvent e) {
 
-        if (key != null
-                && key.getKeyCode() == 32 && !t.getText().equals("")) {
-            t.setText(t.getText().substring(0,t.getText().length()-1));
+        if (key != null && key.getKeyCode() == 32 && !t.getText().equals("")) {
+            t.setText(t.getText().substring(0, t.getText().length() - 1));
         }
-            
+
         if (flag == 0) {
             t.setLocation(300, 400);
             if (key != null
@@ -503,15 +523,15 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             count++;
             // if (key != null && key.getKeyCode() == 10) {
             if (t.getText().equalsIgnoreCase(word)) {
-                score += 100 - count/10;
+                score += 100 - count / 10;
 
-//                if (count >= 500 && count <= 1000) {
-//                    score += 1;
-//                } else if (count >= 250) {
-//                    score += 3;
-//                } else if (count >= 0) {
-//                    score += 5;
-//                }
+                // if (count >= 500 && count <= 1000) {
+                // score += 1;
+                // } else if (count >= 250) {
+                // score += 3;
+                // } else if (count >= 0) {
+                // score += 5;
+                // }
                 word = "Score:" + score;
                 t.setText("");
                 // text.setFont(font);
@@ -557,7 +577,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         key = null;
         repaint();
-//        System.out.println(count);
+        // System.out.println(count);
     }
 
     public void pause() {
@@ -668,17 +688,39 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     }
 
     // makes the dictionary into a list
-    public static LinkedList<String> dictionary() throws FileNotFoundException {
-        Scanner read = new Scanner(new File("src/layers/dict.txt"));
-        // Users//JonathanWexler//Dropbox//workspace//LittleStarsGame//src//layers//
+    public LinkedList<String> dictionary() {
+
+        File f = null;
+        URI file2 = null;
+        
+        URL file = this.getClass().getResource(hard);
+        try {
+            file2 = file.toURI();
+        } catch (URISyntaxException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        System.out.println(file.toString());
+            f = new File (file2);
+
+
+        Scanner read = null;
+        try {
+            read = new Scanner(f);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         LinkedList<String> diction = new LinkedList<String>();
-
-        while (read.hasNext()) {
+        String temp = "";
+         while (read.hasNext()) {
+//        while ((temp = input.readLine()) != null) {
 
             diction.add(read.next());
 
         }
+
         return diction;
     }
 
