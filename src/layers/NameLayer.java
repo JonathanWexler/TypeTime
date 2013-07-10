@@ -23,8 +23,15 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,11 +45,13 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     String hard = "dict.txt";
     String easy = "words.txt";
+    File scoreFile;
+    int highScore = 0;
 
+    int numberOfWords = 10;
     String user = "";
     String word = "";
-    // int [] scores = new int [100];
-    HashMap<String, Integer> scores = new HashMap<String, Integer>();
+    HashMap<Integer, String> scores = new HashMap<Integer, String>();
     String blankWord = "";
     Object[] words;
     int score = 0;
@@ -67,19 +76,22 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     // static InputStream diction;
     // static URL diction;
 
-    JLabel text, textWrong, userName, hi;
+    JLabel text, textWrong, userName, hi, showScores;
 
     public NameLayer() {
-        // diction = (InputStream)
-        // this.getClass().getClassLoader().getResourceAsStream("dict.txt");
 
+        try {
+            scoreFile = new File(getClass().getResource("scores.txt").toURI());
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         this.setLayout(null);
         setBackground(Color.WHITE);
         setDoubleBuffered(true);
         words = dictionary().toArray();
         word = word();
         blankWord = blanker(word);
-        // diction = getClass().getResource("src/layers/dict.txt");
 
         y2 = y = 110;
         x = 1075;
@@ -88,11 +100,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         timer = new Timer(25, this);
         timer.start();
 
-        // Adds the keyboard listener to JPanel to receive key events from this
-        // component.
         this.addKeyListener(this);
-        // Adds the mouse listener to JPanel to receive mouse events from this
-        // component.
         this.addMouseListener(this);
         if (flag == 0) {
             t.setSize(600, 100);
@@ -108,6 +116,49 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         text.setHorizontalAlignment(SwingConstants.CENTER);
         this.add(text);
         text.setVisible(false);
+
+        showScores = new JLabel("");
+        showScores.setSize(1000, 100);
+        showScores.setFont(new Font("Verdana", Font.BOLD, 36));
+        showScores.setForeground(Color.red);
+        showScores.setLocation(100, 170);
+        showScores.setHorizontalAlignment(SwingConstants.CENTER);
+        this.add(showScores);
+        showScores.setVisible(false);
+
+        loadScores();
+    }
+
+    public void loadScores() {
+        Scanner n = null;
+        try {
+            n = new Scanner(scoreFile);
+        } catch (FileNotFoundException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        while (n.hasNextLine()) {
+            int temp = 0;
+            String temp2 = "Jon";
+            String t = n.nextLine();
+            Scanner scan = new Scanner(t);
+            if (scan.hasNextInt()) {
+                temp = scan.nextInt();
+                temp2 = scan.next();
+            }
+            scores.put(temp, temp2);
+        }
+
+        checkScore();
+    }
+
+    public void checkScore() {
+
+        for (int key : scores.keySet()) {
+            if (key > highScore) {
+                highScore = key;
+            }
+        }
     }
 
     public String blanker(String word) {
@@ -137,6 +188,13 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     }
 
     public void paintBegin(Graphics g) {
+
+        if (highScore > 0) {
+            showScores.setText(scores.get(highScore)
+                    + " has the High Score with " + highScore + " points!");
+            showScores.setVisible(true);
+        }
+
         if (stars >= 0) {
             if (lang == 1) {
                 ImageIcon start = new ImageIcon(this.getClass().getResource(
@@ -172,7 +230,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         Graphics2D hello = (Graphics2D) g;
         Graphics2D name = (Graphics2D) g;
-//        Graphics2D num = (Graphics2D) g;
+        // Graphics2D num = (Graphics2D) g;
 
         hello.setFont(new Font("Verdana", Font.BOLD, 16));
         hello.drawString("HELLO, ", 150, 20);
@@ -182,8 +240,8 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         } else {
             name.setFont(new Font("Verdana", Font.BOLD, 36));
         }
-//        String number = (1000 - count)/10 +"";
-//        num.drawString(number, 150, 100);
+        // String number = (1000 - count)/10 +"";
+        // num.drawString(number, 150, 100);
         name.drawString(user.toUpperCase(), 150, 60);
 
         InputStream logoURL = this.getClass().getResourceAsStream("logo.png");
@@ -240,19 +298,19 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
 
         if (stars < 0) {
-//            if (stars < -100) {
-                ImageIcon start = new ImageIcon(this.getClass().getResource(
-                        "TypeTimeLogo.png"));
-                Image t = start.getImage();
-                Graphics2D draw = (Graphics2D) g;
-                draw.drawImage(t, 0, -50, this);
-//            }else {
-//                ImageIcon start = new ImageIcon(this.getClass().getResource(
-//                        "TypeTimeNote.png"));
-//                Image t = start.getImage();
-//                Graphics2D draw = (Graphics2D) g;
-//                draw.drawImage(t, 0, -50, this);
-//            }
+            // if (stars < -100) {
+            ImageIcon start = new ImageIcon(this.getClass().getResource(
+                    "TypeTimeLogo.png"));
+            Image t = start.getImage();
+            Graphics2D draw = (Graphics2D) g;
+            draw.drawImage(t, 0, -50, this);
+            // }else {
+            // ImageIcon start = new ImageIcon(this.getClass().getResource(
+            // "TypeTimeNote.png"));
+            // Image t = start.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 0, -50, this);
+            // }
         }
 
     }
@@ -510,6 +568,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
 
         if (flag == 0) {
+            showScores.setVisible(true);
             t.setLocation(300, 400);
             if (key != null
                     && key.getKeyCode() == 10
@@ -517,21 +576,14 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                 if (t.getText().equals(" Enter Here  ")
                         || t.getText().equalsIgnoreCase("")) {
                     mouse = null;
-                    // new Graphics2D().drawString("Please type your name!",
-                    // 400, 400);
                 } else {
                     user = t.getText();
                     t.setText("");
                     flag = 1;
+                    showScores.setVisible(false);
                 }
             }
 
-            // if (!scores.isEmpty()) {
-            // Object[] highScore = scores.keySet().toArray();
-            // for (int i = 0; i<= scores.keySet().size(); i++) {
-            // System.out.println(highScore.toString());
-            // }
-            // }
         } else if (flag == 1) {
             this.t.setVisible(false);
             if (mouse != null && mouse.getY() >= 530 && mouse.getY() <= 730) {
@@ -539,31 +591,30 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                 t.setLocation(300, 500);
                 this.t.setVisible(true);
                 text.setVisible(true);
+                t.requestFocusInWindow();
             }
 
         } else if (flag == 2) {
             pause();
             count++;
-            // if (key != null && key.getKeyCode() == 10) {
             if (t.getText().equalsIgnoreCase(word)) {
                 score += 100 - count / 10;
-
-                // if (count >= 500 && count <= 1000) {
-                // score += 1;
-                // } else if (count >= 250) {
-                // score += 3;
-                // } else if (count >= 0) {
-                // score += 5;
-                // }
                 word = "Score:" + score;
                 t.setText("");
-                // text.setFont(font);
                 count = -200;
-            } else {
-                // System.out.println("NO, The word is: " + word);
-            }
-            // }
+                numberOfWords--;
 
+            } else {
+            }
+
+        }
+        if (numberOfWords == 1) {
+            showScores.setText("This is the last word!");
+            showScores.setVisible(true);
+
+        } else if (numberOfWords <= 0) {
+            numberOfWords = 10;
+            count = 1000;
         }
 
         stars++;
@@ -577,7 +628,24 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
 
         if (count == 1150) {
-            // scores.put(user, score);
+            showScores.setVisible(false);
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(scoreFile, true));
+                writer.newLine();
+                writer.append(score + "  " + user);
+            } catch (Exception e1) {
+                e1.printStackTrace();
+            } finally {
+                try {
+                    // Close the writer regardless of what happens...
+                    writer.close();
+                } catch (Exception e1) {
+                }
+            }
+            System.out.println("WROTE");
+
+            scores.put(score, user);
             mouse = null;
             word = word();
             t.setText("");
@@ -585,6 +653,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             flag = 0;
             score = 0;
             count = 0;
+            checkScore();
         }
 
         if (stars == 100) {
@@ -600,7 +669,6 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         key = null;
         repaint();
-        // System.out.println(count);
     }
 
     public void pause() {
@@ -641,7 +709,6 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     @Override
     public void mouseMoved(MouseEvent e) {
         // TODO Auto-generated method stub
-        System.out.println(e.getY());
     }
 
     @Override
