@@ -35,6 +35,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
@@ -46,16 +47,17 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     String hard = "dict.txt";
     String easy = "words.txt";
-//    java.io.InputStream scoreFile = getClass().getResourceAsStream("dict.txt");
+    // java.io.InputStream scoreFile =
+    // getClass().getResourceAsStream("dict.txt");
 
     File scoreFile;
     int highScore = 0;
-    
+
     int numberOfWords = 10;
     String user = "";
     String word = "";
     HashMap<Integer, String> scores = new HashMap<Integer, String>();
-    HashMap<Integer, String> topTwen = new HashMap<Integer, String>();
+    ArrayList<Integer> topTwenty = new ArrayList<Integer>();
 
     String blankWord = "";
     Object[] words;
@@ -67,8 +69,6 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     int x, y, y2, count, stars;
     MouseEvent mouse;
     KeyEvent key;
-
-    ArrayList<Integer> topTwenty = new ArrayList<Integer>();
 
     // flag0 is name page, flag1 is start page, flag 2 is gameplay
     int flag = 0;
@@ -84,31 +84,14 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     JLabel text, textWrong, userName, hi, showScores;
 
     public NameLayer() {
-        
-//            URI filename = getClass().getResource(getClass().getResource("scores.txt").getPath()).toURI();
-     // Store them in user's home directory
+
         File userHome = new File(System.getProperty("user.home"));
-//        File userHome = new File("/Users/JonathanWexler/desktop");
 
         scoreFile = new File(userHome, "LSSScores.txt");
-//        scoreFile = new File("scores.txt");
-        
 
-        System.out.println (scoreFile.getAbsolutePath());
-        System.out.println (scoreFile.canRead());
-        boolean b = false;
         if (!scoreFile.exists()) {
-            System.out.println ("NOT EXISTS FIRST");
-            try {
-                b = scoreFile.createNewFile();
-            } catch (IOException e) {
-                System.out.println ("ERROR IN NEW MAKING");
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                
-            }
-        } else {
-            System.out.println ("exists");
+            System.out.println("NOT EXISTS FIRST");
+            createScoreFile();
         }
 
         this.setLayout(null);
@@ -159,12 +142,30 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
     }
 
-    public void writeScore(){
+    public void createScoreFile() {
+        System.out.println(scoreFile.getAbsolutePath());
+        System.out.println(scoreFile.canRead());
+        try {
+            boolean b = scoreFile.createNewFile();
+        } catch (IOException e) {
+            System.out.println("ERROR IN NEW MAKING");
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void writeScore() {
+        if (scoreFile.exists() ) {
+            scoreFile.delete();
+        }
+        createScoreFile();
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(scoreFile, true));
-            writer.newLine();
-            writer.append(score + "  " + user);
+            for (int t : topTwenty) {
+                writer.newLine();
+                writer.append(t + "  " + scores.get(t));
+            }
         } catch (Exception e1) {
             e1.printStackTrace();
         } finally {
@@ -176,6 +177,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
         System.out.println("WROTE");
     }
+
     public void loadScores() throws FileNotFoundException {
         Scanner n = null;
         n = new Scanner(scoreFile);
@@ -195,12 +197,26 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     }
 
     public void checkScore() {
-
+        // topTwenty = (ArrayList<Integer>) scores.keySet();
+        topTwenty.removeAll(topTwenty);
         for (int key : scores.keySet()) {
-            if (key > highScore) {
-                highScore = key;
-            }
+            topTwenty.add(key);
         }
+        sortTopScores();
+    }
+
+    public void sortTopScores() {
+        Collections.sort(topTwenty, Collections.reverseOrder());
+        if (topTwenty.size() > 10) {
+            System.out.println("SIZE IS == " + topTwenty.size());
+            topTwenty.remove(topTwenty.size()-1);
+        }
+
+        for (int t : topTwenty) {
+            System.out.print("--" + t);
+        }
+        System.out.println("");
+
     }
 
     public String blanker(String word) {
@@ -236,7 +252,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                     + " has the High Score with " + highScore + " points!");
             showScores.setVisible(true);
         }
- 
+
         if (stars >= 0) {
             if (lang == 1) {
                 ImageIcon start = new ImageIcon(this.getClass().getResource(
@@ -644,7 +660,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                 word = "Score:" + score;
                 t.setText("");
                 count = -200;
-                numberOfWords--;
+                numberOfWords-=6;
 
             } else {
             }
@@ -671,9 +687,9 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         if (count == 1150) {
             showScores.setVisible(false);
-            writeScore();
-
             scores.put(score, user);
+            checkScore();
+            writeScore();
             mouse = null;
             word = word();
             t.setText("");
@@ -681,7 +697,6 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             flag = 0;
             score = 0;
             count = 0;
-            checkScore();
         }
 
         if (stars == 100) {
