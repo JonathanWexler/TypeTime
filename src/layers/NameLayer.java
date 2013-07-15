@@ -31,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -45,13 +46,17 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     String hard = "dict.txt";
     String easy = "words.txt";
+//    java.io.InputStream scoreFile = getClass().getResourceAsStream("dict.txt");
+
     File scoreFile;
     int highScore = 0;
-
+    
     int numberOfWords = 10;
     String user = "";
     String word = "";
     HashMap<Integer, String> scores = new HashMap<Integer, String>();
+    HashMap<Integer, String> topTwen = new HashMap<Integer, String>();
+
     String blankWord = "";
     Object[] words;
     int score = 0;
@@ -63,7 +68,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     MouseEvent mouse;
     KeyEvent key;
 
-    ArrayList<String> names = new ArrayList<String>();
+    ArrayList<Integer> topTwenty = new ArrayList<Integer>();
 
     // flag0 is name page, flag1 is start page, flag 2 is gameplay
     int flag = 0;
@@ -79,13 +84,33 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     JLabel text, textWrong, userName, hi, showScores;
 
     public NameLayer() {
+        
+//            URI filename = getClass().getResource(getClass().getResource("scores.txt").getPath()).toURI();
+     // Store them in user's home directory
+        File userHome = new File(System.getProperty("user.home"));
+//        File userHome = new File("/Users/JonathanWexler/desktop");
 
-        try {
-            scoreFile = new File(getClass().getResource("scores.txt").toURI());
-        } catch (URISyntaxException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        scoreFile = new File(userHome, "LSSScores.txt");
+//        scoreFile = new File("scores.txt");
+        
+
+        System.out.println (scoreFile.getAbsolutePath());
+        System.out.println (scoreFile.canRead());
+        boolean b = false;
+        if (!scoreFile.exists()) {
+            System.out.println ("NOT EXISTS FIRST");
+            try {
+                b = scoreFile.createNewFile();
+            } catch (IOException e) {
+                System.out.println ("ERROR IN NEW MAKING");
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                
+            }
+        } else {
+            System.out.println ("exists");
         }
+
         this.setLayout(null);
         setBackground(Color.WHITE);
         setDoubleBuffered(true);
@@ -126,17 +151,34 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         this.add(showScores);
         showScores.setVisible(false);
 
-        loadScores();
+        try {
+            loadScores();
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
-    public void loadScores() {
-        Scanner n = null;
+    public void writeScore(){
+        BufferedWriter writer = null;
         try {
-            n = new Scanner(scoreFile);
-        } catch (FileNotFoundException e1) {
-            // TODO Auto-generated catch block
+            writer = new BufferedWriter(new FileWriter(scoreFile, true));
+            writer.newLine();
+            writer.append(score + "  " + user);
+        } catch (Exception e1) {
             e1.printStackTrace();
+        } finally {
+            try {
+                // Close the writer regardless of what happens...
+                writer.close();
+            } catch (Exception e1) {
+            }
         }
+        System.out.println("WROTE");
+    }
+    public void loadScores() throws FileNotFoundException {
+        Scanner n = null;
+        n = new Scanner(scoreFile);
         while (n.hasNextLine()) {
             int temp = 0;
             String temp2 = "Jon";
@@ -194,7 +236,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                     + " has the High Score with " + highScore + " points!");
             showScores.setVisible(true);
         }
-
+ 
         if (stars >= 0) {
             if (lang == 1) {
                 ImageIcon start = new ImageIcon(this.getClass().getResource(
@@ -629,21 +671,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         if (count == 1150) {
             showScores.setVisible(false);
-            BufferedWriter writer = null;
-            try {
-                writer = new BufferedWriter(new FileWriter(scoreFile, true));
-                writer.newLine();
-                writer.append(score + "  " + user);
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            } finally {
-                try {
-                    // Close the writer regardless of what happens...
-                    writer.close();
-                } catch (Exception e1) {
-                }
-            }
-            System.out.println("WROTE");
+            writeScore();
 
             scores.put(score, user);
             mouse = null;
