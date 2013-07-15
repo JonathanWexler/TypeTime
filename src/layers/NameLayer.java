@@ -155,7 +155,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     }
 
     public void writeScore() {
-        if (scoreFile.exists() ) {
+        if (scoreFile.exists()) {
             scoreFile.delete();
         }
         createScoreFile();
@@ -209,7 +209,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         Collections.sort(topTwenty, Collections.reverseOrder());
         if (topTwenty.size() > 10) {
             System.out.println("SIZE IS == " + topTwenty.size());
-            topTwenty.remove(topTwenty.size()-1);
+            topTwenty.remove(topTwenty.size() - 1);
         }
 
         for (int t : topTwenty) {
@@ -246,12 +246,6 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     }
 
     public void paintBegin(Graphics g) {
-
-        if (highScore > 0) {
-            showScores.setText(scores.get(highScore)
-                    + " has the High Score with " + highScore + " points!");
-            showScores.setVisible(true);
-        }
 
         if (stars >= 0) {
             if (lang == 1) {
@@ -562,6 +556,26 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             Graphics2D draw = (Graphics2D) g;
             draw.drawImage(t, 0, 0, this);
             text.setVisible(false);
+            if (count >= 1000 && count < 1150) {
+                if (!topTwenty.isEmpty()
+                        && score >= topTwenty.get(topTwenty.size() - 1)) {
+                    if (score >= topTwenty.get(0)) {
+                        showScores.setLocation(100, 600);
+                        showScores
+                                .setText("Congratulations! A new High Score: "
+                                        + score);
+                    } else {
+                        showScores.setLocation(100, 600);
+                        showScores
+                                .setText("Congratulations! A Top-Ten Score: "
+                                        + score);
+
+                    }
+
+                }
+                showScores.setVisible(true);
+            }
+
         }
     }
 
@@ -637,6 +651,8 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                 } else {
                     user = t.getText();
                     t.setText("");
+                    mouse = null;
+                    key = null;
                     flag = 1;
                     showScores.setVisible(false);
                 }
@@ -644,7 +660,9 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
         } else if (flag == 1) {
             this.t.setVisible(false);
-            if (mouse != null && mouse.getY() >= 530 && mouse.getY() <= 730) {
+            if (key != null
+                    && key.getKeyCode() == 10
+                    || (mouse != null && mouse.getY() >= 530 && mouse.getY() <= 730)) {
                 flag = 2;
                 t.setLocation(300, 500);
                 this.t.setVisible(true);
@@ -660,7 +678,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                 word = "Score:" + score;
                 t.setText("");
                 count = -200;
-                numberOfWords-=6;
+                numberOfWords -= 6;
 
             } else {
             }
