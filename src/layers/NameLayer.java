@@ -1,5 +1,7 @@
 package layers;
 
+//Jonathan Wexler ©2013 jwexman@gmail.com
+
 //import java.applet.AudioClip;
 
 import java.awt.Color;
@@ -26,14 +28,10 @@ import java.awt.event.MouseMotionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -47,21 +45,20 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     String hard = "dict.txt";
     String easy = "words.txt";
-    // java.io.InputStream scoreFile =
-    // getClass().getResourceAsStream("dict.txt");
 
     File scoreFile;
-    int highScore = 0;
+    double startTime;
+    double endTime;
 
     int numberOfWords = 10;
     String user = "";
+    double score = 0;
     String word = "";
-    HashMap<Integer, String> scores = new HashMap<Integer, String>();
-    ArrayList<Integer> topTwenty = new ArrayList<Integer>();
+    HashMap<Double, String> scores = new HashMap<Double, String>();
+    ArrayList<Double> topTwenty = new ArrayList<Double>();
 
     String blankWord = "";
     Object[] words;
-    int score = 0;
 
     boolean pause = false;
 
@@ -72,16 +69,13 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     // flag0 is name page, flag1 is start page, flag 2 is gameplay
     int flag = 0;
-    // private AudioClip a;
     int lang = 1;
 
     JTextField t = new JTextField(" Enter Here  ");
     Font font = new Font("Verdana", Font.BOLD, 86);
     Font fontBig = new Font("Verdana", Font.BOLD, 186);
-    // static InputStream diction;
-    // static URL diction;
 
-    JLabel text, textWrong, userName, hi, showScores;
+    JLabel text, textWrong, userName, hi, showScores, countDown;
 
     public NameLayer() {
 
@@ -117,6 +111,14 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             add(t);
             t.addKeyListener(this);
         }
+
+        countDown = new JLabel("");
+        countDown.setSize(1000, 600);
+        countDown.setFont(new Font("Verdana", Font.BOLD, 36));
+        countDown.setForeground(Color.red);
+        countDown.setLocation(100, 170);
+        countDown.setHorizontalAlignment(SwingConstants.CENTER);
+        this.add(countDown);
         text = new JLabel("");
         text.setSize(1000, 300);
         text.setFont(fontBig);
@@ -162,7 +164,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         BufferedWriter writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(scoreFile, true));
-            for (int t : topTwenty) {
+            for (double t : topTwenty) {
                 writer.newLine();
                 writer.append(t + "  " + scores.get(t));
             }
@@ -179,18 +181,21 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     }
 
     public void loadScores() throws FileNotFoundException {
+        int max = 20;
         Scanner n = null;
         n = new Scanner(scoreFile);
-        while (n.hasNextLine()) {
-            int temp = 0;
+        while (n.hasNextLine() && max > 0) {
+
+            double temp = 0;
             String temp2 = "Jon";
             String t = n.nextLine();
             Scanner scan = new Scanner(t);
-            if (scan.hasNextInt()) {
-                temp = scan.nextInt();
+            if (scan.hasNextDouble()) {
+                temp = scan.nextDouble();
                 temp2 = scan.next();
             }
             scores.put(temp, temp2);
+            max--;
         }
 
         checkScore();
@@ -199,20 +204,22 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
     public void checkScore() {
         // topTwenty = (ArrayList<Integer>) scores.keySet();
         topTwenty.removeAll(topTwenty);
-        for (int key : scores.keySet()) {
+        for (double key : scores.keySet()) {
             topTwenty.add(key);
         }
         sortTopScores();
     }
 
     public void sortTopScores() {
-        Collections.sort(topTwenty, Collections.reverseOrder());
-        if (topTwenty.size() > 10) {
-            System.out.println("SIZE IS == " + topTwenty.size());
-            topTwenty.remove(topTwenty.size() - 1);
-        }
+        Collections.sort(topTwenty);
+        // if (topTwenty.size() > 20) {
+        // System.out.println("SIZE IS == " + topTwenty.size());
+        // topTwenty.remove(topTwenty.size() - 1);
+        // System.out.println("New IS == " + topTwenty.size());
+        //
+        // }
 
-        for (int t : topTwenty) {
+        for (double t : topTwenty) {
             System.out.print("--" + t);
         }
         System.out.println("");
@@ -350,25 +357,16 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
 
         if (stars < 0) {
-            // if (stars < -100) {
             ImageIcon start = new ImageIcon(this.getClass().getResource(
                     "TypeTimeLogo.png"));
             Image t = start.getImage();
             Graphics2D draw = (Graphics2D) g;
             draw.drawImage(t, 0, -50, this);
-            // }else {
-            // ImageIcon start = new ImageIcon(this.getClass().getResource(
-            // "TypeTimeNote.png"));
-            // Image t = start.getImage();
-            // Graphics2D draw = (Graphics2D) g;
-            // draw.drawImage(t, 0, -50, this);
-            // }
         }
 
     }
 
     public void paintStart(Graphics g) {
-        // super.paint(g);
 
         if (lang == 1) {
             ImageIcon start = new ImageIcon(this.getClass().getResource(
@@ -407,25 +405,49 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         text.setText(word.toUpperCase());
 
         if (count < 0) {
-            paintPause(g);
-            // if (pause) {
-            // count = -50;
-            // }
-            if (count % 25 <= -12) {
-                ImageIcon smile = new ImageIcon(this.getClass().getResource(
-                        "smileL.png"));
-                Image s = smile.getImage();
-                Graphics2D draws = (Graphics2D) g;
-                draws.drawImage(s, 100, 250, this);
-                draws.drawImage(s, 900, 250, this);
+            if (score <= 0) {
+                if (count >= -150 && count < -120) {
+                    countDown.setVisible(true);
+                    countDown.setForeground(Color.RED);
+                    countDown.setText("3");
+                    countDown.setFont(new Font("Verdana", Font.BOLD,
+                            200 - count * 2));
+                } else if (count >= -120 && count < -90) {
+                    countDown.setText("2");
+                    countDown.setFont(new Font("Verdana", Font.BOLD,
+                            200 - count * 2));
+                } else if (count >= -90 && count < -60) {
+                    countDown.setText("1");
+                    countDown.setFont(new Font("Verdana", Font.BOLD,
+                            200 - count * 2));
+                } else if (count >= -60 && count < 0) {
+                    countDown.setForeground(Color.GREEN);
+                    countDown.setText("GO!");
+                    countDown.setFont(new Font("Verdana", Font.BOLD,
+                            200 - count * 2));
+                } 
             } else {
-                ImageIcon smile = new ImageIcon(this.getClass().getResource(
-                        "smileR.png"));
-                Image s = smile.getImage();
-                Graphics2D draws = (Graphics2D) g;
-                draws.drawImage(s, 100, 250, this);
-                draws.drawImage(s, 900, 250, this);
+                paintPause(g);
+
+
+                if (count % 25 <= -12) {
+                    ImageIcon smile = new ImageIcon(this.getClass().getResource(
+                            "smileL.png"));
+                    Image s = smile.getImage();
+                    Graphics2D draws = (Graphics2D) g;
+                    draws.drawImage(s, 50, 250, this);
+                    draws.drawImage(s, 950, 250, this);
+                } else {
+                    ImageIcon smile = new ImageIcon(this.getClass().getResource(
+                            "smileR.png"));
+                    Image s = smile.getImage();
+                    Graphics2D draws = (Graphics2D) g;
+                    draws.drawImage(s, 50, 250, this);
+                    draws.drawImage(s, 950, 250, this);
+                }
             }
+
+
 
             ImageIcon time = new ImageIcon(this.getClass().getResource(
                     "nextWord.png"));
@@ -435,154 +457,332 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             if (count == -2) {
                 word = word();
             }
-        } else if (count >= 0 && count < 50) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("20.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 50 && count < 100) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("19.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
+        } else if (count >= 0 && count < 999) {
+            countDown.setVisible(false);
+            if (count == 0) {
+                startTime = System.currentTimeMillis();
+                this.t.setVisible(true);
+                text.setVisible(true);
+                t.requestFocusInWindow();
+            }
+            if (((System.currentTimeMillis() - startTime)/ 1000) < 25) {
+                Graphics2D timer = (Graphics2D) g;
+                timer.setFont(new Font("Verdana", Font.BOLD, 80));
+                timer.setColor(Color.BLUE);
+                timer.drawString(
+                        ((double) Math.round(((System.currentTimeMillis() - startTime) / 1000) * 100) / 100)
+                                + "", 930, 80);
+            }else {
+                Graphics2D timer = (Graphics2D) g;
+                timer.setFont(new Font("Verdana", Font.BOLD, 80));
+                timer.setColor(Color.RED);
+                timer.drawString(
+                        "25.00", 930, 80);
+            }
 
-        } else if (count >= 100 && count < 150) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("18.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-            // text.setVisible(false);
-
-        } else if (count >= 150 && count < 200) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("17.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 200 && count < 250) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("16.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 250 && count < 300) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("15.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 300 && count < 350) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("14.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 350 && count < 400) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("13.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 400 && count < 450) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("12.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 450 && count < 500) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("11.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 500 && count < 550) {
-            ImageIcon time = new ImageIcon(this.getClass()
-                    .getResource("10.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 550 && count < 600) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("9.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 600 && count < 650) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("8.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 650 && count < 700) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("7.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 700 && count < 750) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("6.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 750 && count < 800) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("5.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 800 && count < 850) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("4.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 850 && count < 900) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("3.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 900 && count < 950) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("2.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else if (count >= 950 && count < 1000) {
-            ImageIcon time = new ImageIcon(this.getClass().getResource("1.png"));
-            Image t = time.getImage();
-            Graphics2D draw = (Graphics2D) g;
-            draw.drawImage(t, 1000, 10, this);
-        } else {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("20.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 50 && count < 100) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("19.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            //
+            // } else if (count >= 100 && count < 150) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("18.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // // text.setVisible(false);
+            //
+            // } else if (count >= 150 && count < 200) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("17.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 200 && count < 250) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("16.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 250 && count < 300) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("15.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 300 && count < 350) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("14.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 350 && count < 400) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("13.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 400 && count < 450) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("12.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 450 && count < 500) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("11.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 500 && count < 550) {
+            // ImageIcon time = new ImageIcon(this.getClass()
+            // .getResource("10.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 550 && count < 600) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("9.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 600 && count < 650) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("8.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 650 && count < 700) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("7.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 700 && count < 750) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("6.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 750 && count < 800) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("5.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 800 && count < 850) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("4.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 850 && count < 900) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("3.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 900 && count < 950) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("2.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+            // } else if (count >= 950 && count < 1000) {
+            // ImageIcon time = new
+            // ImageIcon(this.getClass().getResource("1.png"));
+            // Image t = time.getImage();
+            // Graphics2D draw = (Graphics2D) g;
+            // draw.drawImage(t, 1000, 10, this);
+        } else if (count >= 1000 && count < 1150) {
             ImageIcon time = new ImageIcon(this.getClass().getResource(
                     "thanks.png"));
             Image t = time.getImage();
             Graphics2D draw = (Graphics2D) g;
             draw.drawImage(t, 0, 0, this);
             text.setVisible(false);
-            if (count >= 1000 && count < 1150) {
-                if (!topTwenty.isEmpty()
-                        && score >= topTwenty.get(topTwenty.size() - 1)) {
-                    if (score >= topTwenty.get(0)) {
-                        showScores.setLocation(100, 600);
-                        showScores
-                                .setText("Congratulations! A new High Score: "
-                                        + score);
-                    } else {
-                        showScores.setLocation(100, 600);
-                        showScores
-                                .setText("Congratulations! A Top-Ten Score: "
-                                        + score);
-
-                    }
+            if (!topTwenty.isEmpty()
+                    && score < topTwenty.get(topTwenty.size() - 1)) {
+                if (score <= topTwenty.get(0)) {
+                    showScores.setLocation(100, 600);
+                    showScores.setText("Congratulations! A new High Score: "
+                            + score);
+                } else {
+                    showScores.setLocation(100, 600);
+                    showScores.setText("Congratulations! A Top-Twenty Score: "
+                            + score);
 
                 }
-                showScores.setVisible(true);
-            }
 
+            }
+            showScores.setVisible(true);
+
+        } else {
+            ImageIcon time = new ImageIcon(this.getClass().getResource(
+                    "HighScores.png"));
+            Image t = time.getImage();
+            Graphics2D draw = (Graphics2D) g;
+            draw.drawImage(t, 0, 0, this);
+            text.setVisible(false);
+            showScores(g);
+        }
+    }
+
+    public void showScores(Graphics g) {
+        if (topTwenty.size() >= 1) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("1. " + scores.get(topTwenty.get(0)) + " has "
+                    + topTwenty.get(0), 150, 250);
+        }
+        if (topTwenty.size() >= 2) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("2. " + scores.get(topTwenty.get(1)) + " has "
+                    + topTwenty.get(1), 150, 300);
+        }
+        if (topTwenty.size() >= 3) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("3. " + scores.get(topTwenty.get(2)) + " has "
+                    + topTwenty.get(2), 150, 350);
+        }
+        if (topTwenty.size() >= 4) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("4. " + scores.get(topTwenty.get(3)) + " has "
+                    + topTwenty.get(3), 150, 400);
+        }
+        if (topTwenty.size() >= 5) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("5. " + scores.get(topTwenty.get(4)) + " has "
+                    + topTwenty.get(4), 150, 450);
+        }
+        if (topTwenty.size() >= 6) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("6. " + scores.get(topTwenty.get(5)) + " has "
+                    + topTwenty.get(5), 150, 500);
+        }
+        if (topTwenty.size() >= 7) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("7. " + scores.get(topTwenty.get(6)) + " has "
+                    + topTwenty.get(6), 150, 550);
+        }
+        if (topTwenty.size() >= 8) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("8. " + scores.get(topTwenty.get(7)) + " has "
+                    + topTwenty.get(7), 150, 600);
+        }
+        if (topTwenty.size() >= 9) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("9. " + scores.get(topTwenty.get(8)) + " has "
+                    + topTwenty.get(8), 150, 650);
+        }
+        if (topTwenty.size() >= 10) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("10. " + scores.get(topTwenty.get(9)) + " has "
+                    + topTwenty.get(9), 150, 700);
+        }
+        if (topTwenty.size() >= 11) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("11. " + scores.get(topTwenty.get(10)) + " has "
+                    + topTwenty.get(10), 750, 250);
+        }
+        if (topTwenty.size() >= 12) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("12. " + scores.get(topTwenty.get(11)) + " has "
+                    + topTwenty.get(11), 750, 300);
+        }
+        if (topTwenty.size() >= 13) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("13. " + scores.get(topTwenty.get(12)) + " has "
+                    + topTwenty.get(12), 750, 350);
+        }
+        if (topTwenty.size() >= 14) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("14. " + scores.get(topTwenty.get(13)) + " has "
+                    + topTwenty.get(13), 750, 400);
+        }
+        if (topTwenty.size() >= 15) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("15. " + scores.get(topTwenty.get(14)) + " has "
+                    + topTwenty.get(14), 750, 450);
+        }
+        if (topTwenty.size() >= 16) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("16. " + scores.get(topTwenty.get(15)) + " has "
+                    + topTwenty.get(15), 750, 500);
+        }
+        if (topTwenty.size() >= 17) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("17. " + scores.get(topTwenty.get(16)) + " has "
+                    + topTwenty.get(16), 750, 550);
+        }
+        if (topTwenty.size() >= 18) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("18. " + scores.get(topTwenty.get(17)) + " has "
+                    + topTwenty.get(17), 750, 600);
+        }
+        if (topTwenty.size() >= 19) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("19. " + scores.get(topTwenty.get(18)) + " has "
+                    + topTwenty.get(18), 750, 650);
+        }
+        if (topTwenty.size() >= 20) {
+            Graphics2D hello = (Graphics2D) g;
+            hello.setFont(new Font("Verdana", Font.BOLD, 26));
+            hello.setColor(Color.BLACK);
+            hello.drawString("20. " + scores.get(topTwenty.get(19)) + " has "
+                    + topTwenty.get(19), 750, 700);
         }
     }
 
     public void paintPause(Graphics g) {
         if (pause) {
-            if (count >= -50) {
-                count = -100;
+            if (count >= -151) {
+                count = -201;
             }
             if (count % 50 >= -4 || count % 50 < -46) {
                 ImageIcon smile = new ImageIcon(this.getClass().getResource(
@@ -640,7 +840,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
         }
 
         if (flag == 0) {
-            showScores.setVisible(true);
+            showScores.setVisible(false);
             t.setLocation(300, 400);
             if (key != null
                     && key.getKeyCode() == 10
@@ -648,13 +848,21 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
                 if (t.getText().equals(" Enter Here  ")
                         || t.getText().equalsIgnoreCase("")) {
                     mouse = null;
-                } else {
-                    user = t.getText();
+                } else if (t.getText().equalsIgnoreCase("scores")) {
+                    count = 1150;
                     t.setText("");
                     mouse = null;
                     key = null;
-                    flag = 1;
+                    flag = 2;
+                } else {
+                    user = t.getText();
+                    flag = 2;
+                    t.setLocation(300, 500);
+                    this.t.setVisible(false);
+                    count = -150;
+                    t.setText("");
                     showScores.setVisible(false);
+
                 }
             }
 
@@ -674,15 +882,28 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             pause();
             count++;
             if (t.getText().equalsIgnoreCase(word)) {
-                score += 100 - count / 10;
+                score = (double) Math.round((score + (System
+                        .currentTimeMillis() - startTime) / 1000) * 100) / 100;
+                System.out.println("SCORE IS = " + score);
+                // String points = f.format((System.currentTimeMillis() -
+                // startTime)/1000);
+                // score+= (double) points.t;
+
+                // score += 100 - count / 10;
                 word = "Score:" + score;
                 t.setText("");
                 count = -200;
-                numberOfWords -= 6;
+                numberOfWords -= 1;
 
-            } else {
+            } else if (count == 999) {
+                score += 25;
+                System.out.println("SCORE IS = " + score);
+
+                word = "Score:" + score;
+                t.setText("");
+                count = -200;
+                numberOfWords -= 1;
             }
-
         }
         if (numberOfWords == 1) {
             showScores.setText("This is the last word!");
@@ -702,12 +923,15 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
             y2 = 110;
             y = 130;
         }
-
-        if (count == 1150) {
-            showScores.setVisible(false);
+        if (count == 1149) {
             scores.put(score, user);
             checkScore();
             writeScore();
+
+        }
+
+        if (count == 1400) {
+            showScores.setVisible(false);
             mouse = null;
             word = word();
             t.setText("");
@@ -828,7 +1052,7 @@ public class NameLayer extends JPanel implements KeyListener, MouseListener,
 
     // makes the dictionary into a list
     public LinkedList<String> dictionary() {
-        java.io.InputStream file = getClass().getResourceAsStream("dict.txt");
+        java.io.InputStream file = getClass().getResourceAsStream(hard);
         Scanner cns = new Scanner(file);
         LinkedList<String> diction = new LinkedList<String>();
         while (cns.hasNext()) {
